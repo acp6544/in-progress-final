@@ -1,2 +1,175 @@
-<!--game code here, have link at top to link to your resume-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fruit Game for Kids</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: linear-gradient(to right, #ff9a9e, #fad0c4, #fbc2eb);
+            color: #333;
+        }
+        #scoreboard {
+            font-size: 20px;
+            margin: 20px;
+        }
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 150px);
+            gap: 10px;
+            justify-content: center;
+        }
+        .card {
+            width: 150px;
+            height: 150px;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 24px;
+            transition: background-color 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .hidden {
+            background-color: #ccc;
+        }
+        .matched {
+            background-color: #8cc63f;
+            color: white;
+        }
+        .mismatch {
+            background-color: #e74c3c;
+            color: white;
+            pointer-events: none;
+        }
+        #restart {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none;
+        }
+        #restart:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fruit Game for Kids</h1>
+    <div id="scoreboard">Score: 0/6</div>
+    <div class="game-board" id="gameBoard"></div>
+    <button id="restart">Play Again</button>
 
+    <script>
+        const fruits = ['🍎', '🍎', '🍊', '🍊', '🍉', '🍉', '🍇', '🍇', '🍒', '🍒', '🍌', '🍌'];
+        let score = 0;
+        let firstCard = null;
+        let secondCard = null;
+        let isProcessing = false;
+        let totalClicks = 0;
+
+        // Shuffle the cards randomly
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // Create the game board with hidden cards
+        function createBoard() {
+            shuffle(fruits);
+            const gameBoard = document.getElementById('gameBoard');
+            gameBoard.innerHTML = '';
+
+            fruits.forEach(fruit => {
+                const card = document.createElement('div');
+                card.classList.add('card', 'hidden');
+                card.textContent = fruit;
+                card.addEventListener('click', handleCardClick);
+                gameBoard.appendChild(card);
+            });
+        }
+
+        // Handle card click events
+        function handleCardClick(event) {
+            if (isProcessing) return;
+
+            const clickedCard = event.target;
+
+            // If the card is already matched or revealed, do nothing
+            if (clickedCard.classList.contains('matched') || clickedCard.classList.contains('visible')) {
+                return;
+            }
+
+            // Show the card
+            clickedCard.classList.remove('hidden');
+            clickedCard.classList.add('visible');
+            totalClicks++;
+
+            if (!firstCard) {
+                firstCard = clickedCard;
+            } else if (!secondCard) {
+                secondCard = clickedCard;
+                isProcessing = true;
+                checkMatch();
+            }
+
+            if (totalClicks === fruits.length) {
+                endGame();
+            }
+        }
+
+        // Check if two selected cards match
+        function checkMatch() {
+            if (firstCard.textContent === secondCard.textContent) {
+                firstCard.classList.add('matched');
+                secondCard.classList.add('matched');
+                score++;
+                document.getElementById('scoreboard').textContent = `Score: ${score}/6`;
+            } else {
+                firstCard.classList.add('mismatch');
+                secondCard.classList.add('mismatch');
+            }
+
+            setTimeout(() => {
+                resetCards();
+            }, 1000);
+        }
+
+        // Reset selected cards
+        function resetCards() {
+            firstCard = null;
+            secondCard = null;
+            isProcessing = false;
+        }
+
+        // End the game
+        function endGame() {
+            alert('Game Over! Final Score: ' + score);
+            document.getElementById('restart').style.display = 'block';
+        }
+
+        // Restart the game
+        function restartGame() {
+            score = 0;
+            totalClicks = 0;
+            document.getElementById('scoreboard').textContent = `Score: ${score}/6`;
+            document.getElementById('restart').style.display = 'none';
+            createBoard();
+        }
+
+        // Initialize the game
+        document.getElementById('restart').addEventListener('click', restartGame);
+        createBoard();
+    </script>
+</body>
+</html>
